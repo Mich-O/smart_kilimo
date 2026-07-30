@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body { background: #F6F8F6; }
+.focus-ring:focus-visible { outline: 2px solid #0E6E5D; outline-offset: 2px; }
+
+@keyframes rainfall {
+  0%   { transform: translateY(-14px); opacity: 0; }
+  18%  { opacity: 1; }
+  85%  { opacity: 0.5; }
+  100% { transform: translateY(150px); opacity: 0; }
+}
+.rain-drop { animation: rainfall 2.6s linear infinite; }
+
+@keyframes gauge-breathe {
+  0%, 100% { transform: scaleY(0.5); }
+  50%      { transform: scaleY(0.82); }
+}
+.gauge-fill-anim {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: gauge-breathe 5s ease-in-out infinite;
+}
+
+/* deficit / progress bars grow into place instead of snapping to width */
+.js-bar-fill {
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* cards/tiles fade + rise in on page load, staggered via inline animation-delay */
+@keyframes fade-slide-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.stagger-in {
+  animation: fade-slide-in 0.45s ease-out both;
+}
+
+/* small live-status dot for "needs water" style badges */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+.pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+
+/* flash messages ease in instead of appearing instantly */
+@keyframes flash-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.flash-in { animation: flash-in 0.3s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rain-drop, .gauge-fill-anim, .stagger-in, .pulse-dot, .flash-in { animation: none !important; }
+  .js-bar-fill { transition: none !important; }
+}
