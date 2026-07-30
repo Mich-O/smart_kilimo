@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "auth/_form_macros.html" import field, password_field %}
+{% block title %}Admin login — Smart Kilimo{% endblock %}
+{% block content %}
+<div class="max-w-sm mx-auto">
+  <h1 class="text-2xl font-semibold tracking-tight mb-1">Admin login</h1>
+  <p class="text-sm text-ink-muted mb-8">Operations dashboard access.</p>
+
+  <form method="post" novalidate class="rounded-lg border border-border bg-surface p-6">
+    {{ form.hidden_tag() }}
+    {{ field(form.username, autocomplete="username") }}
+    {{ password_field(form.password, autocomplete="current-password") }}
+    <button type="submit" class="w-full mt-2 px-4 py-2.5 rounded-md bg-ink text-white text-sm font-medium hover:bg-ink-muted focus-ring transition-colors">
+      Log in
+    </button>
+  </form>
+</div>
+{% endblock %}

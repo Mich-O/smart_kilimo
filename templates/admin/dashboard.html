@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Admin dashboard — Smart Kilimo{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold tracking-tight mb-8">System overview</h1>
+
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
+  <div class="stagger-in rounded-lg border border-border bg-surface p-5" style="animation-delay: 0ms">
+    <div class="flex items-center justify-between mb-1">
+      <p class="text-xs text-ink-muted">Farmers</p>
+      <svg class="w-3.5 h-3.5 text-ink-faint" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="6.5" r="3"/><path d="M3.5 17c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6" stroke-linecap="round"/></svg>
+    </div>
+    <p class="js-count-up text-2xl font-mono font-semibold" data-target="{{ total_farmers }}">0</p>
+  </div>
+  <div class="stagger-in rounded-lg border border-border bg-surface p-5" style="animation-delay: 40ms">
+    <div class="flex items-center justify-between mb-1">
+      <p class="text-xs text-ink-muted">Plots</p>
+      <svg class="w-3.5 h-3.5 text-ink-faint" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M10 6v8M6 10h8" stroke-linecap="round"/></svg>
+    </div>
+    <p class="js-count-up text-2xl font-mono font-semibold" data-target="{{ total_plots }}">0</p>
+  </div>
+  <div class="stagger-in rounded-lg border border-border bg-surface p-5" style="animation-delay: 80ms">
+    <div class="flex items-center justify-between mb-1">
+      <p class="text-xs text-ink-muted">Active alerts</p>
+      <svg class="w-3.5 h-3.5 {{ 'text-warn-600' if active_alerts else 'text-ink-faint' }}" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3l8 14H2L10 3Z" stroke-linejoin="round"/><path d="M10 8.5v3.5M10 15h.01" stroke-linecap="round"/></svg>
+    </div>
+    <p class="js-count-up text-2xl font-mono font-semibold {{ 'text-warn-600' if active_alerts else '' }}" data-target="{{ active_alerts }}">0</p>
+  </div>
+  <div class="stagger-in rounded-lg border border-border bg-surface p-5" style="animation-delay: 120ms">
+    <div class="flex items-center justify-between mb-1">
+      <p class="text-xs text-ink-muted">Plots needing water</p>
+      <svg class="w-3.5 h-3.5 {{ 'text-warn-600' if needs_water else 'text-ink-faint' }}" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2.5c3 4 5.5 7 5.5 10a5.5 5.5 0 1 1-11 0c0-3 2.5-6 5.5-10Z" stroke-linejoin="round"/></svg>
+    </div>
+    <p class="js-count-up text-2xl font-mono font-semibold {{ 'text-warn-600' if needs_water else '' }}" data-target="{{ needs_water }}">0</p>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="rounded-lg border border-border bg-surface p-6">
+    <p class="text-sm font-medium mb-4">Plots by region</p>
+    {% if region_counts %}
+      <div class="space-y-2.5">
+        {% for name, count in region_counts.items() %}
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-ink-muted w-24">{{ name }}</span>
+            <div class="flex-1 h-2 rounded-full bg-surface-sunk overflow-hidden">
+              {% set region_pct = (count / total_plots * 100) if total_plots else 0 %}
+              <div class="js-bar-fill h-full bg-brand-500" style="width: {{ region_pct }}%" data-target-width="{{ region_pct }}%"></div>
+            </div>
+            <span class="text-xs font-mono w-6 text-right">{{ count }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-xs text-ink-faint">No plots registered yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="rounded-lg border border-border bg-surface p-6">
+    <div class="flex items-center justify-between mb-4">
+      <p class="text-sm font-medium">Recent alerts</p>
+      <a href="{{ url_for('admin.farmers') }}" class="text-xs text-brand-500 hover:underline">View farmers →</a>
+    </div>
+    {% if recent_alerts %}
+      <div class="space-y-2">
+        {% for a in recent_alerts %}
+          <a href="{{ url_for('admin.plot_detail', plot_id=a.plot_id) }}" class="flex items-center justify-between text-xs py-2 border-b border-border last:border-0 hover:text-brand-600 transition-colors">
+            <span class="font-mono">{{ a.phone_number }}</span>
+            <span class="text-ink-faint">{{ a.status }} · {{ a.created_at.strftime("%d %b, %H:%M") }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-xs text-ink-faint">No alerts yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% macro field(f, autocomplete=none, placeholder=none) %}
+  <div class="mb-4">
+    <label for="{{ f.id }}" class="block text-xs font-medium text-ink-muted mb-1.5">{{ f.label.text }}</label>
+    {% set extra = {} %}
+    {% if autocomplete %}{% set _ = extra.update({'autocomplete': autocomplete}) %}{% endif %}
+    {% if placeholder %}{% set _ = extra.update({'placeholder': placeholder}) %}{% endif %}
+    {{ f(class_="w-full px-3 py-2.5 rounded-md border border-border bg-surface text-sm transition-colors focus-ring focus:border-brand-400", **extra) }}
+    {% if f.errors %}
+      <p class="text-xs text-danger-600 mt-1.5">{{ f.errors[0] }}</p>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+{# Every password field in the app renders through this macro, so the
+   show/hide control is identical everywhere instead of appearing on some
+   screens and not others. The toggle only affects our own input's type
+   attribute -- it doesn't try to suppress a browser's native password
+   affordances, it just gives a consistent one that always works. #}
+{% macro password_field(f, autocomplete=none) %}
+  <div class="mb-4">
+    <label for="{{ f.id }}" class="block text-xs font-medium text-ink-muted mb-1.5">{{ f.label.text }}</label>
+    <div class="relative">
+      {% set extra = {} %}
+      {% if autocomplete %}{% set _ = extra.update({'autocomplete': autocomplete}) %}{% endif %}
+      {{ f(class_="w-full px-3 py-2.5 pr-10 rounded-md border border-border bg-surface text-sm transition-colors focus-ring focus:border-brand-400 js-password-input", **extra) }}
+      <button type="button"
+              class="js-password-toggle absolute inset-y-0 right-0 flex items-center px-3 text-ink-faint hover:text-ink transition-colors focus-ring rounded-r-md"
+              aria-label="Show password" tabindex="-1">
+        <svg class="js-eye-open w-4 h-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M1 10s3-6 9-6 9 6 9 6-3 6-9 6-9-6-9-6Z" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="10" cy="10" r="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <svg class="js-eye-closed w-4 h-4 hidden" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2.5 2.5l15 15M8.3 8.4a2.5 2.5 0 0 0 3.4 3.3M6.2 6.3C3.5 7.6 1 10 1 10s3 6 9 6c1.4 0 2.7-.3 3.8-.8M13.6 5.4C12.5 4.9 11.3 4.6 10 4.6c-.5 0-1 0-1.5.1" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    {% if f.errors %}
+      <p class="text-xs text-danger-600 mt-1.5">{{ f.errors[0] }}</p>
+    {% endif %}
+  </div>
+{% endmacro %}

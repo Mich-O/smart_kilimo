@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Log in — Smart Kilimo{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto">
+  <h1 class="text-2xl font-semibold tracking-tight mb-1">Log in</h1>
+  <p class="text-sm text-ink-muted mb-8">Choose which workspace you need.</p>
+
+  <div class="space-y-3">
+    <a href="{{ url_for('auth.farmer_login') }}"
+       class="block rounded-lg border border-border bg-surface p-5 hover:border-brand-400 transition-colors focus-ring">
+      <p class="font-medium text-sm mb-1">Farmer</p>
+      <p class="text-xs text-ink-muted">Register plots, check status, view notifications.</p>
+    </a>
+    <a href="{{ url_for('auth.admin_login') }}"
+       class="block rounded-lg border border-border bg-surface p-5 hover:border-brand-400 transition-colors focus-ring">
+      <p class="font-medium text-sm mb-1">Administrator</p>
+      <p class="text-xs text-ink-muted">System overview, farmer directory, manual notifications, operations tools.</p>
+    </a>
+  </div>
+
+  <p class="text-xs text-ink-faint mt-6">
+    New farmer? <a href="{{ url_for('auth.farmer_register') }}" class="text-brand-500 hover:underline">Create an account</a>.
+  </p>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Smart Kilimo{% endblock %}
+{% block content %}
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">Your plots</h1>
+    <p class="text-sm text-ink-muted mt-1">{{ cards|length }} registered</p>
+  </div>
+  <a href="{{ url_for('farmer.new_plot') }}"
+     class="px-4 py-2.5 rounded-md bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 focus-ring transition-colors">
+    Register a plot
+  </a>
+</div>
+
+{% if cards|length == 0 %}
+  <div class="rounded-lg border border-dashed border-border p-12 text-center flex flex-col items-center">
+    <svg viewBox="0 0 120 90" class="w-24 h-auto mb-5" role="img" aria-label="Illustration of an empty plot outline with a small seedling">
+      <rect x="10" y="15" width="100" height="65" rx="8" fill="none" stroke="#D9CCAC" stroke-width="2" stroke-dasharray="5 5"/>
+      <path d="M60 62 L60 40" stroke="#0E6E5D" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M60 50 C 50 47, 44 39, 49 32 C 58 35, 60 43, 60 50 Z" fill="#0E6E5D" opacity="0.85"/>
+      <path d="M60 44 C 70 41, 76 33, 71 26 C 62 29, 60 37, 60 44 Z" fill="#1D8F78" opacity="0.85"/>
+    </svg>
+    <p class="text-sm text-ink-muted mb-4">You haven't registered a plot yet.</p>
+    <a href="{{ url_for('farmer.new_plot') }}" class="text-brand-500 text-sm font-medium hover:underline transition-colors">Register your first plot →</a>
+  </div>
+{% else %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    {% for c in cards %}
+      {% set plot = c.plot %}
+      {% set pct = (plot.water_deficit_mm / c.threshold_mm * 100) if c.threshold_mm else 0 %}
+      <a href="{{ url_for('farmer.plot_detail', plot_id=plot.plot_id) }}"
+         class="stagger-in block rounded-lg border border-border bg-surface p-5 hover:border-brand-400 transition-colors focus-ring"
+         style="animation-delay: {{ loop.index0 * 40 }}ms">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <p class="font-medium text-sm">{{ plot.plot_label }}</p>
+            <p class="text-xs text-ink-muted mt-0.5">{{ c.stage_name }} · day {{ plot.crop_age_days }}</p>
+          </div>
+          {% if plot.alert_active %}
+            <span class="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wide px-2 py-1 rounded bg-warn-50 text-warn-600">
+              <span class="pulse-dot w-1.5 h-1.5 rounded-full bg-warn-600"></span>Needs water
+            </span>
+          {% elif plot.dry_maturing_override %}
+            <span class="text-[10px] font-mono uppercase tracking-wide px-2 py-1 rounded bg-surface-sunk text-ink-muted">Maturing</span>
+          {% else %}
+            <span class="text-[10px] font-mono uppercase tracking-wide px-2 py-1 rounded bg-brand-50 text-brand-700">OK</span>
+          {% endif %}
+        </div>
+        <div class="flex justify-between text-[11px] font-mono text-ink-faint mb-1">
+          <span>{{ "%.1f"|format(plot.water_deficit_mm) }}mm</span>
+          <span>{{ c.threshold_mm }}mm threshold</span>
+        </div>
+        <div class="h-1.5 rounded-full bg-surface-sunk overflow-hidden">
+          <div class="js-bar-fill h-full {{ 'bg-warn-400' if pct >= 100 else 'bg-brand-500' }}" style="width: {{ [pct, 100]|min }}%" data-target-width="{{ [pct, 100]|min }}%"></div>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

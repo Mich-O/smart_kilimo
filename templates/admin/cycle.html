@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Production cycle — Smart Kilimo{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold tracking-tight mb-1">Production cycle</h1>
+<p class="text-sm text-ink-muted mb-8 max-w-xl">
+  Runs the real scheduled job: a live Open-Meteo call per region, evaluation of every plot, and the
+  reminder pass — the same code <code class="font-mono text-xs">scheduler/jobs.py</code> fires at
+  06:00 EAT. Weather is idempotent per calendar day per region, so running this again today reuses
+  the same reading — that's expected.
+</p>
+
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button type="submit" class="px-4 py-2.5 rounded-md bg-ink text-white text-sm font-medium hover:bg-ink-muted focus-ring transition-colors">
+    Run cycle now
+  </button>
+</form>
+
+{% if summary %}
+  <div class="mt-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 max-w-2xl">
+    {% for label, value in [("Plots", summary.total_plots), ("Alerts", summary.total_alerts), ("Resets", summary.total_resets), ("Suppressed", summary.total_suppressed), ("Reminders", summary.total_reminders), ("Errors", summary.total_errors)] %}
+      <div class="rounded-lg border border-border bg-surface p-4">
+        <p class="text-[10px] text-ink-muted uppercase tracking-wide mb-1">{{ label }}</p>
+        <p class="text-lg font-mono font-semibold {{ 'text-danger-600' if label == 'Errors' and value else '' }}">{{ value }}</p>
+      </div>
+    {% endfor %}
+  </div>
+  <p class="text-xs text-ink-faint mt-3">Completed in {{ summary.duration_seconds }}s</p>
+{% endif %}
+{% endblock %}

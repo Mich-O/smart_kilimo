@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "auth/_form_macros.html" import field, password_field %}
+{% block title %}Create account — Smart Kilimo{% endblock %}
+{% block content %}
+<div class="max-w-sm mx-auto">
+  <h1 class="text-2xl font-semibold tracking-tight mb-1">Create your account</h1>
+  <p class="text-sm text-ink-muted mb-8">You'll register your plot's crop and region right after this.</p>
+
+  <form method="post" novalidate class="rounded-lg border border-border bg-surface p-6">
+    {{ form.hidden_tag() }}
+    {{ field(form.full_name, autocomplete="name") }}
+    {{ field(form.phone_number, autocomplete="tel", placeholder="+2547XXXXXXXX") }}
+    {{ password_field(form.password, autocomplete="new-password") }}
+    {{ password_field(form.confirm_password, autocomplete="new-password") }}
+    <button type="submit" class="w-full mt-2 px-4 py-2.5 rounded-md bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 focus-ring transition-colors">
+      Create account
+    </button>
+  </form>
+
+  <p class="text-xs text-ink-faint mt-4 text-center">
+    Already registered? <a href="{{ url_for('auth.farmer_login') }}" class="text-brand-500 hover:underline">Log in</a>
+  </p>
+</div>
+{% endblock %}

@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{% block title %}Smart Kilimo{% endblock %}</title>
+<link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='tailwind.css') }}">
+{% block head %}{% endblock %}
+</head>
+<body class="font-sans text-ink antialiased">
+
+<header class="border-b border-border bg-surface relative">
+  <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <a href="{{ url_for('landing') }}" class="flex items-center gap-2.5 focus-ring rounded opacity-100 hover:opacity-80 transition-opacity">
+      <svg viewBox="0 0 64 64" class="w-8 h-8 shrink-0" aria-hidden="true">
+        <circle cx="32" cy="32" r="30" fill="#EAF4F1"/>
+        <path d="M20,48 C20,38 36,38 36,28 C36,18 48,18 48,8" fill="none" stroke="#0E6E5D" stroke-width="6" stroke-linecap="round"/>
+        <path d="M35,32 L50,44" fill="none" stroke="#0E6E5D" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+      </svg>
+      <span class="text-xl leading-none tracking-tight">
+        <span class="font-medium text-ink">Smart</span><span class="font-bold text-brand-600"> Kilimo</span>
+      </span>
+    </a>
+
+    <nav class="hidden md:flex items-center gap-1 text-sm">
+      {% if current_user.is_authenticated and current_user.role == 'farmer' %}
+        <a href="{{ url_for('farmer.dashboard') }}" class="px-3 py-2 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors focus-ring">Dashboard</a>
+        <a href="{{ url_for('farmer.new_plot') }}" class="px-3 py-2 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors focus-ring">Register plot</a>
+        <a href="{{ url_for('farmer.notifications') }}" class="px-3 py-2 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors focus-ring">Notifications</a>
+        <span class="mx-2 h-5 w-px bg-border"></span>
+        <a href="{{ url_for('auth.change_password') }}" class="px-3 py-2 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors focus-ring" title="Change password">{{ current_user.display_name }}</a>
+        <form method="post" action="{{ url_for('auth.logout') }}" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="px-3 py-2 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors focus-ring">Log out</button>
+        </form>
+      {% elif current_user.is_authenticated and current_user.role == 'admin' %}
+        <a href="{{ url_for('admin.dashboard') }}" class="px-3 py-2 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors focus-ring">Dashboard</a>
+        <a href="{{ url_for('admin.farmers') }}" class="px-3 py-2 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors focus-ring">Farmers</a>
+        <a href="{{ url_for('admin.notifications') }}" class="px-3 py-2 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors focus-ring">Notifications</a>
+        <a href="{{ url_for('admin.cycle') }}" class="px-3 py-2 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors focus-ring">Cycle</a>
+        <a href="{{ url_for('admin.tools') }}" class="px-3 py-2 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors focus-ring">Tools</a>
+        <span class="mx-2 h-5 w-px bg-border"></span>
+        <a href="{{ url_for('auth.change_password') }}" class="px-3 py-2 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors focus-ring" title="Change password">{{ current_user.display_name }}</a>
+        <form method="post" action="{{ url_for('auth.logout') }}" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="px-3 py-2 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors focus-ring">Log out</button>
+        </form>
+      {% else %}
+        <a href="{{ url_for('auth.choose_login') }}" class="px-3 py-2 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors focus-ring">Log in</a>
+      {% endif %}
+    </nav>
+
+    <button id="mobileMenuBtn" class="md:hidden p-2 -mr-2 rounded-md hover:bg-surface-sunk transition-colors focus-ring" aria-label="Open menu" aria-expanded="false">
+      <svg id="mobileMenuIconOpen" class="w-5 h-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 5.5h15M2.5 10h15M2.5 14.5h15" stroke-linecap="round"/></svg>
+      <svg id="mobileMenuIconClose" class="w-5 h-5 hidden" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4l12 12M16 4L4 16" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+
+  <nav id="mobileMenu" class="hidden md:hidden border-t border-border bg-surface flex flex-col px-4 py-2">
+    {% if current_user.is_authenticated and current_user.role == 'farmer' %}
+      <a href="{{ url_for('farmer.dashboard') }}" class="px-3 py-3 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors">Dashboard</a>
+      <a href="{{ url_for('farmer.new_plot') }}" class="px-3 py-3 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors">Register plot</a>
+      <a href="{{ url_for('farmer.notifications') }}" class="px-3 py-3 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors">Notifications</a>
+      <a href="{{ url_for('auth.change_password') }}" class="px-3 py-3 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors">{{ current_user.display_name }} · change password</a>
+      <form method="post" action="{{ url_for('auth.logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="w-full text-left px-3 py-3 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors">Log out</button>
+      </form>
+    {% elif current_user.is_authenticated and current_user.role == 'admin' %}
+      <a href="{{ url_for('admin.dashboard') }}" class="px-3 py-3 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors">Dashboard</a>
+      <a href="{{ url_for('admin.farmers') }}" class="px-3 py-3 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors">Farmers</a>
+      <a href="{{ url_for('admin.notifications') }}" class="px-3 py-3 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors">Notifications</a>
+      <a href="{{ url_for('admin.cycle') }}" class="px-3 py-3 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors">Cycle</a>
+      <a href="{{ url_for('admin.tools') }}" class="px-3 py-3 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors">Tools</a>
+      <a href="{{ url_for('auth.change_password') }}" class="px-3 py-3 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors">{{ current_user.display_name }} · change password</a>
+      <form method="post" action="{{ url_for('auth.logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="w-full text-left px-3 py-3 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors">Log out</button>
+      </form>
+    {% else %}
+      <a href="{{ url_for('auth.choose_login') }}" class="px-3 py-3 rounded-md hover:bg-surface-sunk text-ink-muted hover:text-ink transition-colors">Log in</a>
+    {% endif %}
+  </nav>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="max-w-6xl mx-auto px-6 pt-4 space-y-2">
+      {% for category, message in messages %}
+        <div class="flash-in text-sm rounded-md border px-4 py-2.5
+          {% if category == 'error' %} bg-danger-50 border-danger-400/30 text-danger-600
+          {% elif category == 'success' %} bg-brand-50 border-brand-400/30 text-brand-700
+          {% else %} bg-surface-sunk border-border text-ink-muted {% endif %}"
+          style="animation-delay: {{ loop.index0 * 60 }}ms">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<main class="max-w-6xl mx-auto px-6 py-10">
+  {% block content %}{% endblock %}
+</main>
+
+<script>
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".js-password-toggle");
+    if (!btn) return;
+    const input = btn.parentElement.querySelector(".js-password-input");
+    const isHidden = input.type === "password";
+    input.type = isHidden ? "text" : "password";
+    btn.querySelector(".js-eye-open").classList.toggle("hidden", isHidden);
+    btn.querySelector(".js-eye-closed").classList.toggle("hidden", !isHidden);
+    btn.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+  });
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // progress/deficit bars: grow into place instead of snapping to their final width
+  document.querySelectorAll(".js-bar-fill").forEach((el) => {
+    const target = el.dataset.targetWidth;
+    if (!target) return;
+    if (reduceMotion) { el.style.width = target; return; }
+    el.style.width = "0%";
+    requestAnimationFrame(() => requestAnimationFrame(() => { el.style.width = target; }));
+  });
+
+  // stat numbers count up from 0 on load
+  document.querySelectorAll(".js-count-up").forEach((el) => {
+    const target = parseInt(el.dataset.target, 10) || 0;
+    if (reduceMotion || !target) { el.textContent = target; return; }
+    const duration = 700;
+    const start = performance.now();
+    function tick(now) {
+      const p = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target * eased);
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+
+  const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+  const mobileMenu = document.getElementById("mobileMenu");
+  if (mobileMenuBtn && mobileMenu) {
+    mobileMenuBtn.addEventListener("click", () => {
+      const isOpen = !mobileMenu.classList.contains("hidden");
+      mobileMenu.classList.toggle("hidden");
+      document.getElementById("mobileMenuIconOpen").classList.toggle("hidden", !isOpen);
+      document.getElementById("mobileMenuIconClose").classList.toggle("hidden", isOpen);
+      mobileMenuBtn.setAttribute("aria-expanded", String(!isOpen));
+    });
+  }
+</script>
+
+<footer class="border-t border-border mt-16">
+  <div class="max-w-6xl mx-auto px-6 py-6 text-xs text-ink-faint flex justify-between">
+    <span>Smart Kilimo — irrigation advisory engine</span>
+    <span>FAO-56 water balance · Africa's Talking · Open-Meteo</span>
+  </div>
+</footer>
+
+</body>
+</html>

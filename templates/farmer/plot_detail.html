@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}{{ plot.plot_label }} — Smart Kilimo{% endblock %}
+{% block content %}
+{% set pct = (plot.water_deficit_mm / stage.deficit_alert_threshold_mm * 100) if stage else 0 %}
+<div class="mb-6">
+  <a href="{{ url_for('farmer.dashboard') }}" class="text-xs text-ink-muted hover:text-ink transition-colors">← All plots</a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 space-y-6">
+    <div class="rounded-lg border border-border bg-surface p-6">
+      <div class="flex items-start justify-between mb-5">
+        <div>
+          <h1 class="text-xl font-semibold tracking-tight">{{ plot.plot_label }}</h1>
+          <p class="text-sm text-ink-muted mt-1">
+            {{ stage.stage_name if stage else "—" }} · day {{ plot.crop_age_days }}
+            {% if stage %} (stage window {{ stage.start_day }}–{{ stage.end_day }}){% endif %}
+          </p>
+        </div>
+        {% if plot.alert_active %}
+          <span class="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wide px-2.5 py-1 rounded bg-warn-50 text-warn-600">
+            <span class="pulse-dot w-1.5 h-1.5 rounded-full bg-warn-600"></span>Needs water
+          </span>
+        {% elif plot.dry_maturing_override %}
+          <span class="text-[11px] font-mono uppercase tracking-wide px-2.5 py-1 rounded bg-surface-sunk text-ink-muted">Maturing — no more alerts</span>
+        {% else %}
+          <span class="text-[11px] font-mono uppercase tracking-wide px-2.5 py-1 rounded bg-brand-50 text-brand-700">OK</span>
+        {% endif %}
+      </div>
+
+      <div class="flex justify-between text-xs font-mono text-ink-faint mb-1.5">
+        <span>Deficit {{ "%.1f"|format(plot.water_deficit_mm) }}mm</span>
+        <span>Threshold {{ stage.deficit_alert_threshold_mm if stage else "—" }}mm</span>
+      </div>
+      <div class="h-2 rounded-full bg-surface-sunk overflow-hidden mb-6">
+        <div class="js-bar-fill h-full {{ 'bg-warn-400' if pct >= 100 else 'bg-brand-500' }}" style="width: {{ [pct, 100]|min }}%" data-target-width="{{ [pct, 100]|min }}%"></div>
+      </div>
+
+      <canvas id="historyChart" height="90"></canvas>
+    </div>
+  </div>
+
+  <div class="space-y-6">
+    <div class="rounded-lg border border-border bg-surface p-5">
+      <p class="text-xs font-medium text-ink-muted mb-3">Plot details</p>
+      <dl class="text-sm space-y-2">
+        <div class="flex justify-between"><dt class="text-ink-muted">Crop</dt><dd class="font-mono">{{ crop_profile.name if crop_profile else plot.crop_type }}</dd></div>
+        <div class="flex justify-between"><dt class="text-ink-muted">Region</dt><dd class="font-mono">{{ plot.region_code }}</dd></div>
+        <div class="flex justify-between items-center">
+          <dt class="text-ink-muted">Size</dt>
+          <dd class="font-mono flex items-center gap-2">
+            {{ plot.plot_size_acres }} acre
+            <a href="{{ url_for('farmer.update_plot_size', plot_id=plot.plot_id) }}" class="text-[11px] text-brand-500 hover:underline transition-colors font-sans">edit</a>
+          </dd>
+        </div>
+        <div class="flex justify-between"><dt class="text-ink-muted">Planted</dt><dd class="font-mono">{{ plot.planting_date }}</dd></div>
+      </dl>
+    </div>
+
+    {% if recommendation %}
+    <div class="rounded-lg border border-border bg-surface p-5">
+      <p class="text-xs font-medium text-ink-muted mb-3">Water needed right now</p>
+      <p class="text-lg font-mono font-semibold">{{ recommendation.cubic_meters }}m³</p>
+      <p class="text-xs text-ink-faint mt-1">
+        {{ recommendation.liters|round|int }}L · ≈{{ recommendation.jerrycans }} x 20L jerrycans ·
+        ≈{{ recommendation.bowser_loads }} bowser load{{ "s" if recommendation.bowser_loads != 1 else "" }} (10,000L)
+      </p>
+      <p class="text-xs text-ink-faint mt-2">To fully clear the current deficit across your {{ plot.plot_size_acres }} acre plot.</p>
+    </div>
+    {% endif %}
+
+    {% if active_alert %}
+    <div class="rounded-lg border border-warn-400/30 bg-warn-50 p-5">
+      <p class="text-xs font-medium text-warn-600 mb-2">Active alert</p>
+      <p class="text-xs text-ink-muted mb-4">Triggered {{ active_alert.created_at.strftime("%d %b, %H:%M") }} · {{ active_alert.reminder_count }} reminder(s) sent so far.</p>
+      <div class="flex flex-col gap-2">
+        <form method="post" action="{{ url_for('farmer.resolve_alert', plot_id=plot.plot_id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="w-full px-3 py-2.5 rounded-md bg-brand-500 text-white text-xs font-medium hover:bg-brand-600 transition-colors focus-ring">
+            I've watered it — mark as done
+          </button>
+        </form>
+        <form method="post" action="{{ url_for('farmer.defer_alert', plot_id=plot.plot_id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="w-full px-3 py-2 rounded-md border border-warn-400/40 text-warn-600 text-xs font-medium hover:bg-warn-50 transition-colors focus-ring">
+            Remind me later
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+  const ctx = document.getElementById('historyChart');
+  const rawLabels = {{ history_data.labels|tojson }};
+  const labels = rawLabels.map((d, i) => `${d} (#${i + 1})`);
+  const threshold = {{ stage.deficit_alert_threshold_mm|tojson if stage else 'null' }};
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels.length ? labels : ['no history yet'],
+      datasets: [
+        {
+          label: 'Deficit (mm)',
+          data: {{ history_data.deficit|tojson }},
+          borderColor: '#0E6E5D',
+          backgroundColor: 'rgba(14,110,93,0.08)',
+          tension: 0.25,
+          fill: true,
+          pointRadius: 2,
+        },
+        {
+          label: 'Rainfall (mm)',
+          data: {{ history_data.rainfall|tojson }},
+          borderColor: '#C08A2E',
+          backgroundColor: 'transparent',
+          borderDash: [4,3],
+          tension: 0.1,
+          pointRadius: 2,
+        },
+        ...(threshold !== null ? [{
+          label: 'Alert threshold',
+          data: labels.map(() => threshold),
+          borderColor: '#C1352B',
+          borderDash: [2,4],
+          borderWidth: 1.5,
+          pointRadius: 0,
+          fill: false,
+        }] : [])
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 11 } } } },
+      scales: {
+        x: { ticks: { font: { size: 10 } } },
+        y: { ticks: { font: { size: 10 } } },
+      }
+    }
+  });
+</script>
+{% endblock %}

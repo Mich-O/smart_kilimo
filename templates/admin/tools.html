@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% from "auth/_form_macros.html" import field %}
+{% block title %}Operations tools — Smart Kilimo{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold tracking-tight mb-1">Operations tools</h1>
+<p class="text-sm text-ink-muted mb-8 max-w-xl">
+  Runs a single plot through the exact same
+  <code class="font-mono text-xs">core.irrigation_engine.evaluate()</code> function the real cycle
+  uses, with a rainfall value you choose — useful for support (re-running a stuck plot) and for
+  verifying the engine's behaviour without waiting on the real weather calendar.
+</p>
+
+<div class="max-w-sm">
+  <form method="post" novalidate class="rounded-lg border border-border bg-surface p-5">
+    {{ form.hidden_tag() }}
+    {{ field(form.plot_id) }}
+    {{ field(form.rainfall_mm, placeholder="0") }}
+    <button type="submit" class="w-full px-4 py-2.5 rounded-md bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 focus-ring transition-colors">
+      Run this day
+    </button>
+  </form>
+</div>
+
+{% if outcome %}
+  <div class="mt-6 max-w-sm rounded-lg border border-border bg-surface-sunk p-4">
+    <p class="text-xs font-mono uppercase tracking-wide mb-1
+      {% if outcome.action == 'ALERT' %} text-warn-600
+      {% elif outcome.action == 'RESET' %} text-brand-600
+      {% else %} text-ink-muted {% endif %}">
+      {{ outcome.action }}
+    </p>
+    <p class="text-sm">{{ outcome.reason }}</p>
+    {% if outcome.action == 'ALERT' %}
+      <p class="text-xs text-ink-faint mt-2">SMS sent: {{ "yes" if outcome.sms_sent else "no (provider rejected it)" }}</p>
+      {% if outcome.alert_message %}
+        <p class="text-xs font-mono whitespace-pre-line bg-surface border border-border rounded-md p-2.5 mt-2">{{ outcome.alert_message }}</p>
+      {% endif %}
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

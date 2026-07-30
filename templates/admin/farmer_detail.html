@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ farmer.phone_number }} — Smart Kilimo{% endblock %}
+{% block content %}
+<a href="{{ url_for('admin.farmers') }}" class="text-xs text-ink-muted hover:text-ink transition-colors">← All farmers</a>
+<h1 class="text-2xl font-semibold tracking-tight mt-3 mb-1 font-mono">{{ farmer.phone_number }}</h1>
+<p class="text-sm text-ink-muted mb-8">{{ farmer.full_name or "No name on file" }} · registered {{ farmer.created_at.strftime("%d %b %Y") }}</p>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="col-span-2">
+    <p class="text-xs font-medium text-ink-muted mb-3">Plots</p>
+    <div class="space-y-2">
+      {% for plot in plots %}
+        <a href="{{ url_for('admin.plot_detail', plot_id=plot.plot_id) }}"
+           class="flex items-center justify-between rounded-lg border border-border bg-surface p-4 hover:border-brand-400 transition-colors">
+          <div>
+            <p class="text-sm font-medium">{{ plot.plot_label }}</p>
+            <p class="text-xs text-ink-muted mt-0.5">Day {{ plot.crop_age_days }} · deficit {{ "%.1f"|format(plot.water_deficit_mm) }}mm</p>
+          </div>
+          {% if plot.alert_active %}
+            <span class="text-[10px] font-mono uppercase px-2 py-1 rounded bg-warn-50 text-warn-600">Needs water</span>
+          {% endif %}
+        </a>
+      {% else %}
+        <p class="text-xs text-ink-faint">No plots registered.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div>
+    <p class="text-xs font-medium text-ink-muted mb-3">Recent messages</p>
+    <div class="space-y-2">
+      {% for m in messages %}
+        <div class="rounded-md border border-border bg-surface p-3 text-xs">
+          <p class="font-mono text-[10px] text-ink-faint mb-1">{{ m.direction }} · {{ m.created_at.strftime("%d %b, %H:%M") }}</p>
+          <p class="whitespace-pre-line">{{ m.message_text[:120] }}{{ "…" if m.message_text|length > 120 else "" }}</p>
+        </div>
+      {% else %}
+        <p class="text-xs text-ink-faint">No messages yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

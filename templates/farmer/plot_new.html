@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "auth/_form_macros.html" import field %}
+{% block title %}Register a plot — Smart Kilimo{% endblock %}
+{% block content %}
+<div class="max-w-sm">
+  <h1 class="text-2xl font-semibold tracking-tight mb-1">Register a plot</h1>
+  <p class="text-sm text-ink-muted mb-8">One plot per crop + region combination.</p>
+
+  <form method="post" novalidate class="rounded-lg border border-border bg-surface p-6">
+    {{ form.hidden_tag() }}
+    {{ field(form.region_code) }}
+    {{ field(form.crop_type) }}
+
+    <div class="mb-4">
+      <label for="plot_size_acres" class="block text-xs font-medium text-ink-muted mb-1.5">Plot size (acres)</label>
+      <div class="flex gap-1.5 mb-2 flex-wrap">
+        {% for value, label in [(0.125,"1/8"), (0.25,"1/4"), (0.5,"1/2"), (1,"1"), (2,"2+")] %}
+          <button type="button" data-fill="{{ value }}"
+                  class="preset-btn text-xs px-2.5 py-1 rounded-md border border-border hover:border-brand-400 hover:text-brand-600 transition-colors focus-ring">
+            {{ label }} acre{{ "s" if value != 1 else "" }}
+          </button>
+        {% endfor %}
+      </div>
+      {{ form.plot_size_acres(class_="w-full px-3 py-2.5 rounded-md border border-border bg-surface text-sm focus-ring focus:border-brand-400", id="plot_size_acres") }}
+      {% if form.plot_size_acres.errors %}
+        <p class="text-xs text-danger-600 mt-1.5">{{ form.plot_size_acres.errors[0] }}</p>
+      {% endif %}
+      <p class="text-xs text-ink-faint mt-1.5">Not sure? A typical smallholder plot is about a quarter acre.</p>
+    </div>
+
+    <button type="submit" class="w-full mt-2 px-4 py-2.5 rounded-md bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors focus-ring">
+      Register plot
+    </button>
+  </form>
+</div>
+
+<script>
+  document.querySelectorAll(".preset-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.getElementById("plot_size_acres").value = btn.dataset.fill;
+    });
+  });
+</script>
+{% endblock %}

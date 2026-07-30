@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Farmers — Smart Kilimo{% endblock %}
+{% block content %}
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+  <h1 class="text-2xl font-semibold tracking-tight">Farmers</h1>
+  <form method="get" class="flex">
+    <input type="text" name="q" value="{{ query }}" placeholder="Search phone number"
+           class="px-3 py-2 rounded-md border border-border text-sm w-full sm:w-56 transition-colors focus-ring">
+  </form>
+</div>
+
+<div class="rounded-lg border border-border bg-surface overflow-hidden">
+  <div class="overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="text-left text-xs text-ink-muted border-b border-border">
+        <th class="px-4 py-3 font-medium">Phone</th>
+        <th class="px-4 py-3 font-medium">Name</th>
+        <th class="px-4 py-3 font-medium">Plots</th>
+        <th class="px-4 py-3 font-medium">Registered</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+        <tr class="border-b border-border last:border-0 hover:bg-surface-sunk">
+          <td class="px-4 py-3">
+            <a href="{{ url_for('admin.farmer_detail', phone_number=row.farmer.phone_number) }}" class="font-mono text-brand-600 hover:underline">
+              {{ row.farmer.phone_number }}
+            </a>
+          </td>
+          <td class="px-4 py-3">{{ row.farmer.full_name or "—" }}</td>
+          <td class="px-4 py-3 font-mono">{{ row.plot_count }}</td>
+          <td class="px-4 py-3 text-ink-faint text-xs">{{ row.farmer.created_at.strftime("%d %b %Y") }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4" class="px-4 py-8 text-center text-ink-faint text-xs">No farmers found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endblock %}
