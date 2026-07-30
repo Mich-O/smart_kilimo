@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+*.db
+*.db-shm
+*.db-wal
+node_modules/
+hassan/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

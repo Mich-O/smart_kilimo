@@ -1,0 +1,13 @@
+{
+  "name": "smart-kilimo-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Tailwind CSS build for Smart Kilimo's server-rendered templates. Compiles a static CSS file at build time -- no CDN, no runtime compilation.",
+  "scripts": {
+    "build:css": "tailwindcss -i ./static/src/input.css -o ./static/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./static/src/input.css -o ./static/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.14"
+  }
+}

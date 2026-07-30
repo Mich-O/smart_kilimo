@@ -1,0 +1,70 @@
+# Render Blueprint — deploy with "New > Blueprint" in the Render dashboard,
+# pointing at this repo. Render will provision the web service and the
+# Postgres database together and wire DATABASE_URL automatically.
+#
+# --workers 1 is intentional, not a mistake: scheduler/jobs.py starts an
+# in-process APScheduler on boot. More than one worker process would each
+# start their own copy and multiply every SMS the daily cycle sends.
+# --threads 4 gives real concurrency without that risk.
+#
+# scripts/seed_demo_data.py runs before gunicorn on every boot (chained in
+# startCommand below, not preDeployCommand -- that's a paid-tier-only
+# Render feature and this uses the free plan). It's gated by
+# SEED_DEMO_DATA and defensive against its own failure (see the script's
+# entrypoint), so it can never prevent the real app from starting even if
+# seeding itself breaks.
+databases:
+  - name: smart-kilimo-db
+    plan: free
+    databaseName: smart_kilimo
+    user: smart_kilimo
+
+services:
+  - type: web
+    name: smart-kilimo
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python scripts/seed_demo_data.py && gunicorn wsgi:app --workers 1 --threads 4 --timeout 120
+    healthCheckPath: /health
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      - key: INTERNAL_API_TOKEN
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: smart-kilimo-db
+          property: connectionString
+      - key: AT_USERNAME
+        sync: false
+      - key: AT_API_KEY
+        sync: false
+      - key: AT_SENDER_ID
+        value: SmartKilimo
+      - key: AT_ENVIRONMENT
+        value: sandbox
+      - key: WEATHER_API_BASE_URL
+        value: https://api.open-meteo.com/v1/forecast
+      - key: WEATHER_TIMEZONE
+        value: Africa/Nairobi
+      - key: WEATHER_PAST_DAYS
+        value: "1"
+      - key: RAINFALL_RESET_THRESHOLD_MM
+        value: "5.0"
+      - key: DAILY_CYCLE_HOUR
+        value: "6"
+      - key: DAILY_CYCLE_MINUTE
+        value: "0"
+      - key: REMINDER_INTERVAL_HOURS
+        value: "4"
+      - key: MAX_REMINDERS
+        value: "3"
+      - key: DEFAULT_ADMIN_USERNAME
+        sync: false
+      - key: DEFAULT_ADMIN_PASSWORD
+        sync: false
+      - key: SEED_DEMO_DATA
+        value: "true"
