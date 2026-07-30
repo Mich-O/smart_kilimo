@@ -124,6 +124,15 @@ On first boot this automatically:
 Visit **http://localhost:5000**. Log in as admin at `/admin/login`, or
 register a farmer at `/farmer/register`.
 
+> **Phone number format:** farmer accounts are keyed by phone number, and
+> the registration/login forms enforce a Kenyan E.164 format —
+> `+254` followed by `7` or `1`, then 8 digits (`^\+254[17]\d{8}$`, see
+> `api/forms.py`), e.g. `+254712345678`. Use a number in this shape
+> everywhere in the project — the web forms will reject anything else, and
+> keeping to it also means the same farmer identity works whether you're
+> testing through the web app or through the Africa's Talking USSD/SMS
+> simulator (see below), since both are keyed by the same phone number.
+
 ### 6. (Optional) Seed demo data
 
 ```bash
@@ -172,6 +181,10 @@ Two ways around that:
 - Or skip local tunneling entirely and use the already-hosted deployment —
   see [DEPLOYMENT.md](DEPLOYMENT.md) §4 for the full simulator walkthrough
   against the live app.
+
+Whichever route you use, dial in from the AT simulator with a `+254...`
+number (see the phone number format note above) so the session lands on
+the same farmer identity your web account uses.
 
 ## Environment variables
 

@@ -84,7 +84,13 @@ Postgres instance.
    enter your sandbox phone number and the service code you configured,
    and dial in — you're now exercising the exact same `core/ussd_session.py`
    state machine as Demo A, just over AT's real USSD transport instead of
-   a browser form.
+   a browser form. **Use a Kenyan-format number for the simulator's phone
+   number field** — `+254` followed by `7` or `1`, then 8 digits (e.g.
+   `+254712345678`) — the same shape the web app's registration form
+   enforces (`api/forms.py`). Farmer accounts are keyed by phone number, so
+   sticking to this format is what lets a number registered through the
+   web app and one dialed in through the simulator refer to the same
+   farmer.
 4. To see an alert actually arrive, either wait for the real 06:00 EAT
    scheduled cycle, or log in as admin and use **Tools** to push that
    plot's deficit over threshold on demand — the resulting SMS goes out
