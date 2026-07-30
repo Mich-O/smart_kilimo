@@ -56,7 +56,7 @@ class Settings:
 
     at_username: str
     at_api_key: str
-    at_sender_id: str
+    at_sender_id: str | None
     at_environment: str
 
     weather_api_base_url: str
@@ -88,7 +88,14 @@ def get_settings() -> Settings:
         database_url=_get("DATABASE_URL", "sqlite:///smart_kilimo.db"),
         at_username=_require("AT_USERNAME"),
         at_api_key=_require("AT_API_KEY"),
-        at_sender_id=_get("AT_SENDER_ID", "SmartKilimo"),
+        # Deliberately no hardcoded default here: an unregistered/unapproved
+        # sender ID causes Africa's Talking to reject the send outright
+        # (empty Recipients array, not a clear error). Leaving this unset
+        # makes the SDK omit "from" entirely, so AT uses the account's own
+        # default sender identity -- which always works, sandbox or live.
+        # Only set AT_SENDER_ID once you've actually registered a
+        # shortcode/alphanumeric ID with Africa's Talking.
+        at_sender_id=_get("AT_SENDER_ID", "") or None,
         at_environment=_get("AT_ENVIRONMENT", "sandbox"),
         weather_api_base_url=_get(
             "WEATHER_API_BASE_URL", "https://api.open-meteo.com/v1/forecast"

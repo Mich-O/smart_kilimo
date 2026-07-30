@@ -53,7 +53,7 @@ services:
       - key: AT_API_KEY
         sync: false
       - key: AT_SENDER_ID
-        value: SmartKilimo
+        sync: false
       - key: AT_ENVIRONMENT
         value: sandbox
       - key: WEATHER_API_BASE_URL

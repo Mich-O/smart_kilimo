@@ -37,6 +37,13 @@ There's no build step on Render itself — what's committed is what ships.
 2. Render will prompt for the env vars marked `sync: false` in
    `render.yaml` — fill these in:
    - `AT_USERNAME`, `AT_API_KEY` — from your Africa's Talking sandbox.
+   - `AT_SENDER_ID` — **leave this blank unless you've actually registered
+     a shortcode or alphanumeric ID with Africa's Talking.** An
+     unregistered sender ID doesn't raise a clear error; Africa's Talking
+     just returns an empty `Recipients` array, which our code logs as
+     `AT SMS not accepted: no recipients in response`. Leaving it blank
+     makes the SDK omit the `from` field entirely, so AT falls back to
+     your account's default sender identity, which always works.
    - `DEFAULT_ADMIN_USERNAME`, `DEFAULT_ADMIN_PASSWORD` — the admin account
      that gets seeded on first boot. Pick a real password here; it's the
      only account you'll be able to log in with initially.
