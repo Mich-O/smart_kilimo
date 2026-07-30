@@ -50,6 +50,15 @@ There's no build step on Render itself — what's committed is what ships.
    **change that password immediately** via the account menu → it's the
    only credential that ever touched an env var in plaintext.
 
+**Note on the Python version pin:** `render.yaml` sets `PYTHON_VERSION`
+explicitly (also mirrored in `.python-version`). This isn't decorative —
+without it, Render uses whatever it currently treats as the default for
+new services, which drifts over time. SQLAlchemy 2.0.36 crashes under
+Python 3.14 (`Mapped[Optional[str]]`-style columns raise a `typing.Union`
+`TypeError` during declarative mapping) — this took down a real deploy
+before the pin was added. If you ever bump the Python version here,
+confirm the full test suite still passes on it first.
+
 ## 3. Demo A — the web app
 
 Nothing further needed. Farmers self-register at `/farmer/register`;
