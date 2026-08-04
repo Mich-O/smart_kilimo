@@ -133,6 +133,14 @@ register a farmer at `/farmer/register`.
 > testing through the web app or through the Africa's Talking USSD/SMS
 > simulator (see below), since both are keyed by the same phone number.
 
+> **Testing admin and farmer at the same time?** Login uses a standard
+> Flask session cookie, which is shared by every tab in a browser profile —
+> logging in as a farmer in one tab will log out an admin session open in
+> another tab of the same profile (this is normal cookie behavior, not a
+> bug)
+> To have both logged in at once, use two different browser profiles, or a
+> regular window plus an Incognito/private window, one role per window.
+
 ### 6. (Optional) Seed demo data
 
 ```bash
