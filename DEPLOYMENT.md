@@ -99,8 +99,8 @@ Postgres instance.
 ## 5. Known constraints on Render's free tier
 
 - **Spin-down.** The free web service sleeps after ~15 minutes of no
-  traffic and takes 30–60s to wake on the next request. Fine for grading;
-  just expect the first click after a break to be slow.
+  traffic and takes 30–60s to wake on the next request.
+  Expect the first click after a break to be slow.
 - **The scheduler won't fire reliably while asleep.** APScheduler's 06:00
   EAT job only runs if the process is awake at that moment. Use the admin
   **Cycle** page's "Run cycle now" button as the reliable way to
